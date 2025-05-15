@@ -1,9 +1,9 @@
-use book_craft_ai::ollama::{OllamaClient, OllamaModel};
+use book_craft_ai::{ollama::{OllamaClient, OllamaModel}, utils};
 use tokio;
 
 #[tokio::main]
 async fn main() {
-    let prompt = "Write some story about the boy who is advanturer that use sword as a weapon in the Fantasy world.".to_string();
+    let prompt = utils::get_prompt();
 
     let ollama_client = OllamaClient::default();
     let res = match ollama_client.send_question(OllamaModel::Gemma3, &prompt).await {
