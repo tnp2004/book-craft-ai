@@ -2,7 +2,7 @@ use std::{fs::File, io::Write};
 
 use base64::{Engine, engine::general_purpose};
 use regex::Regex;
-use reqwest::Error;
+use reqwest::{Error, Response};
 
 use crate::{
     models::{GeminiRequest, GenerationConfig, Part, RequestContent},
@@ -36,6 +36,9 @@ impl GeminiClient {
         };
 
         let client = reqwest::Client::new();
+
+        println!("Generating . . .");
+        
         let resp = client
             .post(&url)
             .header("Content-Type", "application/json")
@@ -43,7 +46,13 @@ impl GeminiClient {
             .send()
             .await?;
 
-        let response_json = resp.text().await?;
+        self.create_image(resp).await?;
+
+        Ok(())
+    }
+
+    async fn create_image(&self, response: Response) -> Result<(), Error> {
+        let response_json = response.text().await?;
 
         let regex = Regex::new(r#""data": "([^"]*)""#).expect("Create Regex failed");
 
@@ -52,13 +61,17 @@ impl GeminiClient {
             None => panic!("Could not find image data in response"),
         };
 
-        let image_path = format!("images/{}", utils::generate_image_name("image"));
+        let file_name = utils::generate_image_name("image");
+        let image_path = format!("images/{}", file_name);
 
         let image_data = general_purpose::STANDARD
             .decode(base64)
             .expect("Decode base64 image data failed");
         let mut file = File::create(image_path).expect("Create file failed");
-        file.write_all(&image_data).expect("Write file buffer failed");
+        file.write_all(&image_data)
+            .expect("Write file buffer failed");
+
+        println!("{} has been created", file_name);
 
         Ok(())
     }

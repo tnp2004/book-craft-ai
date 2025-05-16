@@ -7,7 +7,9 @@ async fn main() {
     
     let prompt = utils::get_prompt();
     let gemini_client = GeminiClient::new(config.api_key);
-    let image = gemini_client.generate_image(&prompt).await;
+    if let Err(err) = gemini_client.generate_image(&prompt).await {
+        panic!("{}", err);
+    };
 
     let ollama_client = OllamaClient::default();
     let res = match ollama_client.send_question(OllamaModel::Gemma3, &prompt).await {
