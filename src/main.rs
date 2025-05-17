@@ -6,7 +6,7 @@ async fn main() {
     let config: Config = Config::read_config("config.toml");
     
     let prompt = utils::get_prompt();
-    let gemini_client = GeminiClient::new(config.api_key);
+    let gemini_client = GeminiClient::new(config);
     if let Err(err) = gemini_client.generate_image(&prompt).await {
         panic!("{}", err);
     };

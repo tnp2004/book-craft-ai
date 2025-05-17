@@ -5,24 +5,20 @@ use regex::Regex;
 use reqwest::{Error, Response};
 
 use crate::{
-    models::{GeminiRequest, GenerationConfig, Part, RequestContent},
-    utils,
+    config::Config, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
 };
 
 pub struct GeminiClient {
-    api_key: String,
+    config: Config,
 }
 
 impl GeminiClient {
-    pub fn new(api_key: String) -> Self {
-        Self { api_key }
+    pub fn new(config: Config) -> Self {
+        Self { config }
     }
 
     pub async fn generate_image(&self, prompt: &str) -> Result<(), Error> {
-        let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key={}",
-            self.api_key
-        );
+        let url = format!("{}?key={}", self.config.gemini_api, self.config.api_key);
 
         let request_body = GeminiRequest {
             contents: vec![RequestContent {
