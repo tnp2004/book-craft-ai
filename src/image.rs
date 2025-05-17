@@ -5,7 +5,7 @@ use regex::Regex;
 use reqwest::{Error, Response};
 
 use crate::{
-    config::Config, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
+    file::Config, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
 };
 
 pub struct GeminiClient {
