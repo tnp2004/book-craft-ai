@@ -58,7 +58,7 @@ impl GeminiClient {
         };
 
         let file_name = utils::generate_image_name("image");
-        let image_path = format!("images/{}", file_name);
+        let image_path = format!("{}/{}", self.config.image_dir ,file_name);
 
         let image_data = general_purpose::STANDARD
             .decode(base64)

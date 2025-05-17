@@ -5,7 +5,8 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub api_key: String,
-    pub gemini_api: String
+    pub gemini_api: String,
+    pub image_dir: String
 }
 
 impl Config {
