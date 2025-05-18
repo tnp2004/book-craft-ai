@@ -1,11 +1,10 @@
-use std::{fs::File, io::Write};
-
-use base64::{Engine, engine::general_purpose};
 use regex::Regex;
-use reqwest::{Error, Response};
+use reqwest::{Error, Response, StatusCode};
 
 use crate::{
-    file::Config, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
+    file::{Config, File},
+    models::{GeminiRequest, GenerationConfig, Part, RequestContent},
+    utils,
 };
 
 pub struct GeminiClient {
@@ -33,14 +32,18 @@ impl GeminiClient {
 
         let client = reqwest::Client::new();
 
-        println!("Generating . . .");
-        
+        println!("Generating image . . .");
+
         let resp = client
             .post(&url)
             .header("Content-Type", "application/json")
             .json(&request_body)
             .send()
             .await?;
+
+        if resp.status() != StatusCode::OK {
+            panic!("Generate image failed:{:?}", resp);
+        }
 
         self.create_image(resp).await?;
 
@@ -58,14 +61,11 @@ impl GeminiClient {
         };
 
         let file_name = utils::generate_image_name("image");
-        let image_path = format!("{}/{}", self.config.image_dir ,file_name);
+        let image_path = format!("{}/{}", self.config.image_dir, file_name);
 
-        let image_data = general_purpose::STANDARD
-            .decode(base64)
-            .expect("Decode base64 image data failed");
-        let mut file = File::create(image_path).expect("Create file failed");
-        file.write_all(&image_data)
-            .expect("Write file buffer failed");
+        if let Err(err) = File::create_file(base64, &image_path) {
+            panic!("{}", err);
+        }
 
         println!("{} has been created", file_name);
 
