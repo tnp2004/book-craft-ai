@@ -1,7 +1,6 @@
 use ollama_rs::{
     Ollama,
-    error::OllamaError,
-    generation::completion::{GenerationResponse, request::GenerationRequest},
+    generation::completion::{request::GenerationRequest},
 };
 
 use crate::file::{File, Instruction};
@@ -12,7 +11,7 @@ pub enum OllamaModel {
 }
 pub struct OllamaClient {
     ollama: Ollama,
-    instruction: Instruction
+    instruction: Instruction,
 }
 
 impl std::fmt::Display for OllamaModel {
@@ -42,18 +41,22 @@ impl OllamaClient {
         }
     }
 
-    pub async fn send_question(
-        &self,
-        model: OllamaModel,
-        prompt: &str,
-    ) -> Result<GenerationResponse, OllamaError> {
+    pub async fn send_question(&self, model: OllamaModel, prompt: &str) -> String {
         let inst_prompt = format!("{}\n{}", self.instruction.instruction, prompt);
-        
+
         let res = self
             .ollama
             .generate(GenerationRequest::new(model.to_string(), inst_prompt))
-            .await;
+            .await
+            .expect("Generate request failed");
 
-        return res;
+        let trimmed_json_block: String = res.response
+            .chars()
+            .skip(7)
+            .take(res.response.chars().count() - 7 - 3)
+            .collect();
+        println!("{}", trimmed_json_block);
+
+        return trimmed_json_block;
     }
 }
