@@ -1,18 +1,11 @@
+use std::io::Write;
 use std::{fs, io};
-use std::{io::Write};
 
 use base64::{Engine, engine::general_purpose};
 
 use serde::Deserialize;
 
 pub struct File;
-
-#[derive(Deserialize, Debug)]
-pub struct Config {
-    pub api_key: String,
-    pub gemini_api: String,
-    pub image_dir: String,
-}
 
 #[derive(Deserialize, Debug)]
 pub struct Instruction {
@@ -29,13 +22,6 @@ impl File {
             .expect("Write file buffer failed");
 
         Ok(())
-    }
-
-    pub fn read_config(path: &str) -> Config {
-        let contents = fs::read_to_string(path).expect("Read config failed");
-        let config: Config = toml::from_str(&contents).expect("Parse config failed");
-
-        return config;
     }
 
     pub fn read_instruction(path: &str) -> Instruction {

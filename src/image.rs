@@ -2,9 +2,7 @@ use regex::Regex;
 use reqwest::{Error, Response, StatusCode};
 
 use crate::{
-    file::{Config, File},
-    models::{GeminiRequest, GenerationConfig, Part, RequestContent},
-    utils,
+    config::Config, file::File, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
 };
 
 pub struct GeminiClient {
@@ -17,7 +15,7 @@ impl GeminiClient {
     }
 
     pub async fn generate_image(&self, prompt: &str) -> Result<(), Error> {
-        let url = format!("{}?key={}", self.config.gemini_api, self.config.api_key);
+        let url = format!("{}?key={}", self.config.gemini.api_url, self.config.gemini.api_key);
 
         let request_body = GeminiRequest {
             contents: vec![RequestContent {
@@ -61,7 +59,7 @@ impl GeminiClient {
         };
 
         let file_name = utils::generate_image_name("image");
-        let image_path = format!("{}/{}", self.config.image_dir, file_name);
+        let image_path = format!("{}/{}", self.config.directory.image, file_name);
 
         if let Err(err) = File::create_file(base64, &image_path) {
             panic!("{}", err);

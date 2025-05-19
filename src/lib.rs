@@ -4,3 +4,4 @@ pub mod image;
 pub mod models;
 pub mod file;
 pub mod book;
+pub mod config;

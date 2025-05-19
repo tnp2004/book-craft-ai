@@ -1,5 +1,13 @@
 use serde::{Deserialize, Serialize};
 
+use crate::{
+    config::Config, image::GeminiClient
+};
+
+pub struct Book {
+    config: Config,
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct BookContent {
     title: String,
@@ -19,15 +27,20 @@ struct Story {
     image_prompt: String,
 }
 
-pub fn read_book_response(json_str: &str) {
-    let book_content: BookContent = serde_json::from_str(json_str).expect("Parse JSON failed");
-    println!("title: {}", book_content.title);
-
-    for character in book_content.characters {
-        println!("character: {}", character.name)
+impl Book {
+    pub fn new(config: Config) -> Self {
+        return Book { config };
     }
 
-    for story in book_content.story {
-        println!("content: {}", story.content)
+    fn read_book_response(json_str: &str) -> Result<BookContent, serde_json::Error> {
+        let book_content: BookContent = serde_json::from_str(json_str)?;
+
+        Ok(book_content)
+    }
+
+    pub async fn create_book(&self, resp: &str) {
+        let book_content = Self::read_book_response(resp).expect("Read book content failed");
+
+        let gemini_client = GeminiClient::new(self.config.clone());
     }
 }
