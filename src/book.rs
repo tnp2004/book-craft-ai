@@ -1,8 +1,9 @@
+use std::sync::Arc;
+
+use futures::future;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    config::Config, image::GeminiClient
-};
+use crate::{config::Config, image::GeminiClient};
 
 pub struct Book {
     config: Config,
@@ -41,6 +42,28 @@ impl Book {
     pub async fn create_book(&self, resp: &str) {
         let book_content = Self::read_book_response(resp).expect("Read book content failed");
 
-        let gemini_client = GeminiClient::new(self.config.clone());
+        let gemini_client = Arc::new(GeminiClient::new(self.config.clone()));
+
+        let tasks: Vec<_> = book_content
+            .story
+            .into_iter()
+            .map(|story| {
+                let client = Arc::clone(&gemini_client);
+                tokio::spawn(async move {
+                    client
+                        .generate_image(&story.image_prompt)
+                        .await
+                        .unwrap_or_else(|err| panic!("Image generation failed: {}", err))
+                })
+            })
+            .collect();
+
+        let file_name_vec: Vec<String> = future::join_all(tasks)
+            .await
+            .into_iter()
+            .map(|res| res.expect("Task panicked"))
+            .collect();
+
+        println!("{:?}", file_name_vec);
     }
 }

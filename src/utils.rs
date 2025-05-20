@@ -20,7 +20,7 @@ pub fn generate_image_name(prefix: &str) -> String {
     let now = SystemTime::now();
     let duration_since_epoch = now.duration_since(UNIX_EPOCH).expect("Time went backwards");
 
-    let timestamp = duration_since_epoch.as_secs();
+    let timestamp = duration_since_epoch.as_millis();
     let file_name = format!("{}-{}.png", prefix, timestamp);
 
     return file_name;

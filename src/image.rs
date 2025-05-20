@@ -5,6 +5,7 @@ use crate::{
     config::Config, file::File, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
 };
 
+#[derive(Clone)]
 pub struct GeminiClient {
     config: Config,
 }
@@ -14,7 +15,7 @@ impl GeminiClient {
         Self { config }
     }
 
-    pub async fn generate_image(&self, prompt: &str) -> Result<(), Error> {
+    pub async fn generate_image(&self, prompt: &str) -> Result<String, Error> {
         let url = format!("{}?key={}", self.config.gemini.api_url, self.config.gemini.api_key);
 
         let request_body = GeminiRequest {
@@ -43,12 +44,12 @@ impl GeminiClient {
             panic!("Generate image failed:{:?}", resp);
         }
 
-        self.create_image(resp).await?;
+        let file_name = self.create_image(resp).await?;
 
-        Ok(())
+        Ok(file_name)
     }
 
-    async fn create_image(&self, response: Response) -> Result<(), Error> {
+    async fn create_image(&self, response: Response) -> Result<String, Error> {
         let response_json = response.text().await?;
 
         let regex = Regex::new(r#""data": "([^"]*)""#).expect("Create Regex failed");
@@ -67,6 +68,6 @@ impl GeminiClient {
 
         println!("{} has been created", file_name);
 
-        Ok(())
+        Ok(file_name)
     }
 }
