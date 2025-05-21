@@ -9,20 +9,21 @@ pub struct Book {
     config: Config,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct BookContent {
     title: String,
     characters: Vec<Character>,
+    image_theme: String,
     story: Vec<Story>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct Character {
     name: String,
     nature: String,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct Story {
     content: String,
     image_prompt: String,
@@ -49,9 +50,11 @@ impl Book {
             .into_iter()
             .map(|story| {
                 let client = Arc::clone(&gemini_client);
+                let image_theme = book_content.image_theme.clone();
                 tokio::spawn(async move {
+                    let prompt = format!("{}\n{}", image_theme, story.image_prompt);
                     client
-                        .generate_image(&story.image_prompt)
+                        .generate_image(&prompt)
                         .await
                         .unwrap_or_else(|err| panic!("Image generation failed: {}", err))
                 })

@@ -34,7 +34,7 @@ impl OllamaClient {
         model: OllamaModel,
         prompt: &str,
     ) -> Result<String, OllamaError> {
-        let inst_prompt = format!("{}\n{}", self.instruction.instruction, prompt);
+        let inst_prompt = format!("{} {}", self.instruction.instruction, prompt);
 
         println!("Start generating response . . .");
 
