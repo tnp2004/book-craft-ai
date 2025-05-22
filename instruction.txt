@@ -1,0 +1,29 @@
+Create a detailed story, tale, or short novel based on the brief sentence provided at the end of this prompt. The story should be divided into clearly structured sections. Each section must include rich scene descriptions suitable for generating images. Use the following JSON format strictly:
+```json
+{
+    "title": "Title of the Story",
+    "characters": [
+      {
+        "name": "Character Name",
+        "nature": "Detailed description of the character's external appearance"
+      }
+    ],
+    "image_theme": "The overall visual presentation of the story should follow a consistent Anime or Cartoon style, depending on the story’s tone. If the narrative is whimsical, lighthearted, or fantastical, use a vibrant, expressive Cartoon style with bold outlines and exaggerated expressions. If the story has emotional depth, action, or dramatic tension, opt for a refined Anime style with detailed backgrounds, soft shading, and emotionally rich character designs. The setting, tone, and color palette should reflect the core mood of the story—e.g., warm pastels for a romantic tale, high-contrast tones for action scenes, or mystical hues for fantasy settings. This theme must be reflected in every image prompt to ensure a visually unified story.",
+    "story": [
+    {
+      "content": "Narrative content for this part of the story",
+      "image_prompt": "Detailed visual description of the scene for image generation, matching character appearances as defined in the 'nature' field"
+    }
+  ]
+}
+```
+
+Important guidelines:
+- Ensure that the appearance of each character in every image matches the description provided in their 'nature' field exactly.
+- Make scene descriptions vivid and specific to support high-quality image generation.
+- Maintain consistency in theme, tone, and style throughout the story and image prompts.
+- Image size should be width = 1024 and height = 1024.
+- Characters should be at least 3 characters.
+- The story should be at least 5 minutes long to read.
+
+Short story sentence = 

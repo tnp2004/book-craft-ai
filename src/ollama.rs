@@ -1,14 +1,12 @@
 use ollama_rs::{Ollama, error::OllamaError, generation::completion::request::GenerationRequest};
 
-use crate::file::Instruction;
-
 #[derive(Debug)]
 pub enum OllamaModel {
     Gemma3,
 }
 pub struct OllamaClient {
     ollama: Ollama,
-    instruction: Instruction,
+    instruction: String,
 }
 
 impl std::fmt::Display for OllamaModel {
@@ -22,7 +20,7 @@ impl std::fmt::Display for OllamaModel {
 }
 
 impl OllamaClient {
-    pub fn new(host: &str, port: u16, instruction: Instruction) -> Self {
+    pub fn new(host: &str, port: u16, instruction: String) -> Self {
         Self {
             ollama: Ollama::new(host, port),
             instruction: instruction,
@@ -34,7 +32,7 @@ impl OllamaClient {
         model: OllamaModel,
         prompt: &str,
     ) -> Result<String, OllamaError> {
-        let inst_prompt = format!("{} {}", self.instruction.instruction, prompt);
+        let inst_prompt = format!("{} {}", self.instruction, prompt);
 
         println!("Start generating response . . .");
 
@@ -43,6 +41,7 @@ impl OllamaClient {
             .generate(GenerationRequest::new(model.to_string(), inst_prompt))
             .await?;
 
+        println!("{}", resp.response);
         let trimmed_json_block = Self::trim_ollama_resp(resp.response);
 
         Ok(trimmed_json_block)
