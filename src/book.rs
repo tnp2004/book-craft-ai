@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use futures::future;
+use reqwest::Error;
 use serde::{Deserialize, Serialize};
 
 use crate::{config::Config, image::GeminiClient};
@@ -43,6 +44,13 @@ impl Book {
     pub async fn create_book(&self, resp: &str) {
         let book_content = Self::read_book_response(resp).expect("Read book content failed");
 
+        let images = match self.generate_book_image(book_content).await {
+            Ok(images) => images,
+            Err(err) => panic!("{}", err)
+        };
+    }
+
+    async fn generate_book_image(&self, book_content: BookContent) -> Result<Vec<String>, Error> {
         let gemini_client = Arc::new(GeminiClient::new(self.config.clone()));
 
         let tasks: Vec<_> = book_content
@@ -67,6 +75,6 @@ impl Book {
             .map(|res| res.expect("Task panicked"))
             .collect();
 
-        println!("{:?}", file_name_vec);
+        Ok(file_name_vec)
     }
 }
