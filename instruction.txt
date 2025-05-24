@@ -25,5 +25,6 @@ Important guidelines:
 - Image size should be width = 1024 and height = 1024.
 - Characters should be at least 3 characters.
 - The story should be at least 5 minutes long to read.
+- Response should not have any quote symbols or Special characters
 
 Short story sentence = 

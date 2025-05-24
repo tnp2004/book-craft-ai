@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::{Error, Write};
 use std::{fs, io};
 
 use base64::{Engine, engine::general_purpose};
@@ -16,6 +16,12 @@ impl File {
 
         Ok(())
     }
+
+    pub fn create_directory(images_dir: &str) -> Result<(), Error> {
+        fs::create_dir(images_dir)?;
+
+        Ok(())
+    }   
 
     pub fn read_instruction(path: &str) -> String {
         let instruction_txt = fs::read_to_string(path).expect("Read instruction failed");

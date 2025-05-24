@@ -15,7 +15,7 @@ impl GeminiClient {
         Self { config }
     }
 
-    pub async fn generate_image(&self, prompt: &str) -> Result<String, Error> {
+    pub async fn generate_image(&self, prompt: &str, image_dir: &str) -> Result<String, Error> {
         let url = format!("{}?key={}", self.config.gemini.api_url, self.config.gemini.api_key);
 
         let request_body = GeminiRequest {
@@ -44,12 +44,12 @@ impl GeminiClient {
             panic!("Generate image failed:{:?}", resp);
         }
 
-        let file_name = self.create_image(resp).await?;
+        let file_name = self.create_image(resp, image_dir).await?;
 
         Ok(file_name)
     }
 
-    async fn create_image(&self, response: Response) -> Result<String, Error> {
+    async fn create_image(&self, response: Response, dir: &str) -> Result<String, Error> {
         let response_json = response.text().await?;
 
         let regex = Regex::new(r#""data": "([^"]*)""#).expect("Create Regex failed");
@@ -60,7 +60,7 @@ impl GeminiClient {
         };
 
         let file_name = utils::generate_image_name("image");
-        let image_path = format!("{}/{}", self.config.directory.image, file_name);
+        let image_path = format!("{}/{}", dir, file_name);
 
         if let Err(err) = File::create_file(base64, &image_path) {
             panic!("{}", err);

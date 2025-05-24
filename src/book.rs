@@ -4,7 +4,7 @@ use futures::future;
 use reqwest::Error;
 use serde::{Deserialize, Serialize};
 
-use crate::{config::Config, image::GeminiClient};
+use crate::{config::Config, file::File, image::GeminiClient, utils};
 
 pub struct Book {
     config: Config,
@@ -53,16 +53,23 @@ impl Book {
     async fn generate_book_image(&self, book_content: BookContent) -> Result<Vec<String>, Error> {
         let gemini_client = Arc::new(GeminiClient::new(self.config.clone()));
 
+        let title = utils::create_dir_name(book_content.title);
+        let image_dir = format!("{}/{}", self.config.directory.image, title);
+        if let Err(err) = File::create_directory(&image_dir) {
+            panic!("{}", err)
+        };
+
         let tasks: Vec<_> = book_content
             .story
             .into_iter()
             .map(|story| {
                 let client = Arc::clone(&gemini_client);
                 let image_theme = book_content.image_theme.clone();
+                let dir = image_dir.clone();
                 tokio::spawn(async move {
                     let prompt = format!("{}\n{}", image_theme, story.image_prompt);
                     client
-                        .generate_image(&prompt)
+                        .generate_image(&prompt, &dir)
                         .await
                         .unwrap_or_else(|err| panic!("Image generation failed: {}", err))
                 })

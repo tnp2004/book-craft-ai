@@ -25,3 +25,7 @@ pub fn generate_image_name(prefix: &str) -> String {
 
     return file_name;
 }
+
+pub fn create_dir_name(dir: String) -> String {
+    dir.replace(" ", "-")
+}
