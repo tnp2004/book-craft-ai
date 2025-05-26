@@ -17,5 +17,5 @@ async fn main() {
     };
 
     let book = Book::new(config);
-    book.create_book(&resp).await;
+    let _ = book.create_book(&resp).await;
 }

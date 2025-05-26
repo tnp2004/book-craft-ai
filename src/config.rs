@@ -16,7 +16,7 @@ pub struct Gemini {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Directory {
-    pub image: String,
+    pub books: String,
     pub instruction: String,
 }
 

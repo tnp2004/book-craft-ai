@@ -17,8 +17,15 @@ impl File {
         Ok(())
     }
 
+    pub fn create_html(html: &str, file_path: &str) -> Result<(), io::Error> {
+        let mut file = fs::File::create(file_path).expect("Create file failed");
+        file.write_all(html.as_bytes()).expect("Write html file failed");
+
+        Ok(())
+    }
+
     pub fn create_directory(images_dir: &str) -> Result<(), Error> {
-        fs::create_dir(images_dir)?;
+        fs::create_dir_all(images_dir)?;
 
         Ok(())
     }   

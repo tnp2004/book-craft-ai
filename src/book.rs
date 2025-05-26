@@ -41,10 +41,10 @@ impl Book {
         Ok(book_content)
     }
 
-    pub async fn create_book(&self, resp: &str) {
-        let book_content = Self::read_book_response(resp).expect("Read book content failed");
+    pub async fn create_book(&self, resp: &str) -> Result<String, serde_json::Error> {
+        let book_content = Self::read_book_response(resp)?;
 
-        let images = match self.generate_book_image(book_content.clone()).await {
+        let images_path = match self.generate_book_image(book_content.clone()).await {
             Ok(images) => images,
             Err(err) => panic!("{}", err)
         };
@@ -52,12 +52,13 @@ impl Book {
         let mut story_elems = String::new();
 
         for (i, story) in book_content.story.iter().enumerate() {
+            let image = images_path.get(i).expect("Image not found");
             let elem = format!(r#"
                 <div>
                     <img class="shadow-sm mb-3 border-4 border-double object-cover" src="{}" alt="{}">
                     <p>{}</p>
                 </div>
-            "#, images[i], book_content.title, story.content);
+            "#, image, book_content.title, story.content);
 
             story_elems.push_str(&elem);
         }
@@ -85,14 +86,22 @@ impl Book {
         </html>
         "#, book_content.title, book_content.title, story_elems);
 
-        println!("{}", html);
+        let title = utils::create_dir_name(book_content.title.clone());
+        let book_dir = format!("{}/{}/{}.html", self.config.directory.books, title, title);
+        if let Err(err) = File::create_html(&html, &book_dir) {
+            panic!("{}", err)
+        }
+
+        println!("{} book has been created at {}", book_content.title, book_dir);
+
+        Ok(book_dir)
     }
 
     async fn generate_book_image(&self, book_content: BookContent) -> Result<Vec<String>, Error> {
         let gemini_client = Arc::new(GeminiClient::new(self.config.clone()));
 
         let title = utils::create_dir_name(book_content.title);
-        let image_dir = format!("{}/{}", self.config.directory.image, title);
+        let image_dir = format!("{}/{}/{}", self.config.directory.books, title, "images");
         if let Err(err) = File::create_directory(&image_dir) {
             panic!("{}", err)
         };
@@ -120,7 +129,7 @@ impl Book {
             .map(|res| {
                 let path = res.expect("Task panicked");
 
-                format!("{}/{}", image_dir, path)
+                format!("{}/{}", "images", path)
             })
             .collect();
 
