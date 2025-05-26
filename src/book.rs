@@ -44,10 +44,48 @@ impl Book {
     pub async fn create_book(&self, resp: &str) {
         let book_content = Self::read_book_response(resp).expect("Read book content failed");
 
-        let images = match self.generate_book_image(book_content).await {
+        let images = match self.generate_book_image(book_content.clone()).await {
             Ok(images) => images,
             Err(err) => panic!("{}", err)
         };
+
+        let mut story_elems = String::new();
+
+        for (i, story) in book_content.story.iter().enumerate() {
+            let elem = format!(r#"
+                <div>
+                    <img class="shadow-sm mb-3 border-4 border-double object-cover" src="{}" alt="{}">
+                    <p>{}</p>
+                </div>
+            "#, images[i], book_content.title, story.content);
+
+            story_elems.push_str(&elem);
+        }
+
+        let html = format!(r#"
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+            <link rel="preconnect" href="https://fonts.googleapis.com">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+            <link href="https://fonts.googleapis.com/css2?family=Delius&display=swap" rel="stylesheet">
+            <title>{}</title>
+        </head>
+        <body class="font-[Delius]">
+            <div class="bg-amber-50 w-[700px] m-auto my-5 p-5 drop-shadow-md">
+                <h1 class="text-center text-2xl font-bold mb-5">{}</h1>
+                <div class="flex flex-col gap-5">
+                    {}
+                </div>
+            </div>
+        </body>
+        </html>
+        "#, book_content.title, book_content.title, story_elems);
+
+        println!("{}", html);
     }
 
     async fn generate_book_image(&self, book_content: BookContent) -> Result<Vec<String>, Error> {
@@ -79,7 +117,11 @@ impl Book {
         let file_name_vec: Vec<String> = future::join_all(tasks)
             .await
             .into_iter()
-            .map(|res| res.expect("Task panicked"))
+            .map(|res| {
+                let path = res.expect("Task panicked");
+
+                format!("{}/{}", image_dir, path)
+            })
             .collect();
 
         Ok(file_name_vec)
