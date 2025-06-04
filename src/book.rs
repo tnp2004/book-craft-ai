@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use futures::future;
+use minify_html::{minify, Cfg};
 use reqwest::Error;
 use serde::{Deserialize, Serialize};
 
@@ -86,13 +87,13 @@ impl Book {
         </html>
         "#, book_content.title, book_content.title, story_elems);
 
+        let minified_html = minify(html.as_bytes(), &Cfg::new());
+
         let title = utils::create_dir_name(book_content.title.clone());
         let book_dir = format!("{}/{}/{}.html", self.config.directory.books, title, title);
-        if let Err(err) = File::create_html(&html, &book_dir) {
+        if let Err(err) = File::create_html(&minified_html, &book_dir) {
             panic!("{}", err)
         }
-
-        println!("{} book has been created at {}", book_content.title, book_dir);
 
         Ok(book_dir)
     }
@@ -123,16 +124,17 @@ impl Book {
             })
             .collect();
 
+        
         let file_name_vec: Vec<String> = future::join_all(tasks)
-            .await
-            .into_iter()
-            .map(|res| {
-                let path = res.expect("Task panicked");
-
-                format!("{}/{}", "images", path)
-            })
-            .collect();
-
+        .await
+        .into_iter()
+        .map(|res| {
+            let path = res.expect("Task panicked");
+            
+            format!("{}/{}", "images", path)
+        })
+        .collect();
+    
         Ok(file_name_vec)
     }
 }

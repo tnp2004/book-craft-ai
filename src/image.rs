@@ -31,8 +31,6 @@ impl GeminiClient {
 
         let client = reqwest::Client::new();
 
-        println!("Generating image . . .");
-
         let resp = client
             .post(&url)
             .header("Content-Type", "application/json")
@@ -65,8 +63,6 @@ impl GeminiClient {
         if let Err(err) = File::create_file(base64, &image_path) {
             panic!("{}", err);
         }
-
-        println!("{} has been created", file_name);
 
         Ok(file_name)
     }

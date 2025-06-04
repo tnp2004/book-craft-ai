@@ -17,9 +17,9 @@ impl File {
         Ok(())
     }
 
-    pub fn create_html(html: &str, file_path: &str) -> Result<(), io::Error> {
+    pub fn create_html(html: &[u8], file_path: &str) -> Result<(), io::Error> {
         let mut file = fs::File::create(file_path).expect("Create file failed");
-        file.write_all(html.as_bytes()).expect("Write html file failed");
+        file.write_all(html).expect("Write html file failed");
 
         Ok(())
     }

@@ -34,14 +34,11 @@ impl OllamaClient {
     ) -> Result<String, OllamaError> {
         let inst_prompt = format!("{} {}", self.instruction, prompt);
 
-        println!("Start generating response . . .");
-
         let resp = self
             .ollama
             .generate(GenerationRequest::new(model.to_string(), inst_prompt))
             .await?;
-
-        println!("{}", resp.response);
+                
         let trimmed_json_block = Self::trim_ollama_resp(resp.response);
 
         Ok(trimmed_json_block)

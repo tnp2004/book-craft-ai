@@ -3,6 +3,8 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use loading::Loading;
+
 pub fn get_prompt() -> String {
     let args: Vec<String> = args().collect();
     let args_len = args.len();
@@ -28,4 +30,12 @@ pub fn generate_image_name(prefix: &str) -> String {
 
 pub fn create_dir_name(dir: String) -> String {
     dir.replace(" ", "-")
+}
+
+pub fn create_loader(text: &str) -> Loading {
+    let loading = Loading::default();
+
+    loading.text(text);
+
+    loading
 }
