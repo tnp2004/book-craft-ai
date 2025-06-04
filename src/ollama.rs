@@ -1,4 +1,5 @@
-use ollama_rs::{Ollama, error::OllamaError, generation::completion::request::GenerationRequest};
+use ollama_rs::{Ollama, generation::completion::request::GenerationRequest};
+use anyhow::Result;
 
 #[derive(Debug)]
 pub enum OllamaModel {
@@ -31,7 +32,7 @@ impl OllamaClient {
         &self,
         model: OllamaModel,
         prompt: &str,
-    ) -> Result<String, OllamaError> {
+    ) -> Result<String> {
         let inst_prompt = format!("{} {}", self.instruction, prompt);
 
         let resp = self

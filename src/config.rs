@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::fs;
+use anyhow::Result;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
@@ -26,9 +27,9 @@ pub struct Ollama {
     pub port: u16,
 }
 
-pub fn read_config(path: &str) -> Config {
-    let contents = fs::read_to_string(path).expect("Read config failed");
-    let config: Config = toml::from_str(&contents).expect("Parse config failed");
+pub fn read_config(path: &str) -> Result<Config> {
+    let contents = fs::read_to_string(path)?;
+    let config: Config = toml::from_str(&contents)?;
 
-    return config;
+    Ok(config)
 }

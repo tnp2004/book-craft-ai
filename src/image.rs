@@ -1,8 +1,12 @@
+use anyhow::{Result, anyhow};
 use regex::Regex;
-use reqwest::{Error, Response, StatusCode};
+use reqwest::{Response, StatusCode};
 
 use crate::{
-    config::Config, file::File, models::{GeminiRequest, GenerationConfig, Part, RequestContent}, utils
+    config::Config,
+    file::File,
+    models::{GeminiRequest, GenerationConfig, Part, RequestContent},
+    utils,
 };
 
 #[derive(Clone)]
@@ -15,8 +19,11 @@ impl GeminiClient {
         Self { config }
     }
 
-    pub async fn generate_image(&self, prompt: &str, image_dir: &str) -> Result<String, Error> {
-        let url = format!("{}?key={}", self.config.gemini.api_url, self.config.gemini.api_key);
+    pub async fn generate_image(&self, prompt: &str, image_dir: &str) -> Result<String> {
+        let url = format!(
+            "{}?key={}",
+            self.config.gemini.api_url, self.config.gemini.api_key
+        );
 
         let request_body = GeminiRequest {
             contents: vec![RequestContent {
@@ -31,15 +38,14 @@ impl GeminiClient {
 
         let client = reqwest::Client::new();
 
-        let resp = client
-            .post(&url)
+        let resp = client.post(&url)
             .header("Content-Type", "application/json")
             .json(&request_body)
             .send()
             .await?;
 
         if resp.status() != StatusCode::OK {
-            panic!("Generate image failed:{:?}", resp);
+            return Err(anyhow!("Generate image failed:{:?}", resp));
         }
 
         let file_name = self.create_image(resp, image_dir).await?;
@@ -47,22 +53,20 @@ impl GeminiClient {
         Ok(file_name)
     }
 
-    async fn create_image(&self, response: Response, dir: &str) -> Result<String, Error> {
+    async fn create_image(&self, response: Response, dir: &str) -> Result<String> {
         let response_json = response.text().await?;
 
-        let regex = Regex::new(r#""data": "([^"]*)""#).expect("Create Regex failed");
+        let regex = Regex::new(r#""data": "([^"]*)""#)?;
 
         let base64 = match regex.captures(&response_json) {
-            Some(captures) => captures.get(1).map(|m| m.as_str()).unwrap_or(""),
-            None => panic!("Could not find image data in response"),
+            Some(captures) => captures.get(1).map(|m| m.as_str()).unwrap(),
+            None => return Err(anyhow!("Could not find image data in response")),
         };
 
-        let file_name = utils::generate_image_name("image");
+        let file_name = utils::generate_image_name("image")?;
         let image_path = format!("{}/{}", dir, file_name);
 
-        if let Err(err) = File::create_file(base64, &image_path) {
-            panic!("{}", err);
-        }
+        File::create_file(base64, &image_path)?;
 
         Ok(file_name)
     }
